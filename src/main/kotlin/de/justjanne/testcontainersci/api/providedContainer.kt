@@ -10,16 +10,18 @@
 package de.justjanne.testcontainersci.api
 
 import de.justjanne.testcontainersci.implementation.GitlabCiProvidedContainer
+import de.justjanne.testcontainersci.implementation.TestContainersProvidedContainer
+import org.testcontainers.containers.GenericContainer
 import java.net.InetAddress
 
 /**
  * Build a provided container from an environment variable and a builder for a local container
  */
-fun providedContainer(
+fun <T : GenericContainer<T>> providedContainer(
   envVariable: String,
-  containerBuilder: () -> ProvidedContainer
+  containerBuilder: () -> T
 ) = when {
   !System.getenv(envVariable).isNullOrEmpty() ->
     GitlabCiProvidedContainer(InetAddress.getByName(System.getenv(envVariable)))
-  else -> containerBuilder()
+  else -> TestContainersProvidedContainer(containerBuilder())
 }

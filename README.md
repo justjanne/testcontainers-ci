@@ -1,50 +1,39 @@
-# Kotlin Bitflags
+# Testcontainers-CI
 
-Kotlin-Bitflags is a utility library to simplify implementing bitflags in Kotlin. It integrates with Kotlin unsigned 
-types and Java Enumsets. This especially useful when interacting with binary protocols from Kotlin.
+Testcontainers-CI allows you to easily use testcontainers whenever you can, but use containers created through other 
+means whenever you can’t.
 
-## Using Kotlin-Bitflags
+When running your CI in docker, you can’t launch new containers without DinD, but thanks to Gitlab Ci Services you can 
+run a docker container with the desired service and use it in your code easily.
 
-After adding this module to your dependencies, you'll have to implement the related interfaces in your classes:
+This project simplifies this process, by providing a façade for both types of containers.
+
+## Using Testcontainers-CI
+
+After adding this module to your dependencies, you can just wrap your calls creating testcontainers with the 
+`providedContainer` function, and it’ll return either the Testcontainer, or the provided container, whichever is
+available in the current environment. 
 
 ```kotlin
-enum class MessageFlag(
-  override val value: UInt,
-) : Flag<UInt> {
-  Self(0x01u),
-  Highlight(0x02u),
-  Redirected(0x04u),
-  ServerMsg(0x08u),
-  Backlog(0x80u);
-
-  companion object : Flags<UInt, MessageFlag> {
-    override val all: Set<MessageFlag> = values().toEnumSet()
+@CiContainers
+class MyLittleTest {
+  private val container = providedContainer("REDIS_CONTAINER") {
+    GenericContainer(DockerImageName.parse("redis:5.0.3-alpine"))
+      .withExposedPorts(6379);
+  }
+  
+  @Test
+  fun test() {
+    println(container.address)
+    println(container.getMappedPort(6379))
   }
 }
 ```
 
-This allows you to then use this elsewhere to e.g initialize a field from discrete values
-```kotlin
-// Construct from varargs or an array
-val field = MessageFlag.of(MessageFlag.Self, MessageFlag.Highlight)
-
-val values = listOf(MessageFlag.Self, MessageFlag.Highlight)
-// Or from a collection
-val field = MessageFlag.of(values)
-// Or use the to helper
-val field = values.toEnumSet()
-```
-
-You can also convert such a field into the raw binary value easily
-```kotlin
-// Returns in this case UInt
-field.toBits()
-```
-
-Additional utility functions are available:
-```kotlin
-// Empty field
-MessageFlag.none()
-// Get all non-null values
-MessageFlag.validValues()
+```yaml
+  services:
+    - name: "redis:5.0.3-alpine"
+      alias: "test_redis_instance"
+  variables:
+    REDIS_CONTAINER: "test_redis_instance"
 ```
