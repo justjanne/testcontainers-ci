@@ -23,7 +23,7 @@ class CiContainersExtension : BeforeEachCallback, AfterEachCallback {
     context?.requiredTestInstances?.allInstances?.forEach { instance ->
       instance.javaClass.declaredFields.map { field ->
         if (field.type == ProvidedContainer::class.java) {
-          field.trySetAccessible()
+          field.isAccessible = true
           containers.add(field.get(instance) as ProvidedContainer)
         }
       }
