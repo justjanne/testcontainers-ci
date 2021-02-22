@@ -22,7 +22,7 @@ build:
   script:
     - "./gradlew build"
   rules:
-    - if: "$CI_COMMIT_BRANCH == 'master'"
+    - if: "$CI_COMMIT_BRANCH == 'main'"
       when: on_success
 
 test:
@@ -36,7 +36,7 @@ test:
       junit:
         - "build/test-results/**/TEST-*.xml"
   rules:
-    - if: "$CI_COMMIT_BRANCH == 'master'"
+    - if: "$CI_COMMIT_BRANCH == 'main'"
       when: on_success
   dependencies:
     - "build"
@@ -53,5 +53,5 @@ release:
     - "build"
     - "test"
   rules:
-    - if: "$CI_COMMIT_TAG != '' && $CI_COMMIT_BRANCH == 'master'"
+    - if: "$CI_COMMIT_TAG != '' && $CI_COMMIT_BRANCH == 'main'"
       when: on_success
